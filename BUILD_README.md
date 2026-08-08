@@ -39,6 +39,13 @@ npm start
 npm run build:android
 ```
 
+#### Build on GitHub
+The repository includes a GitHub Actions workflow at `/home/runner/work/LawAI-Mobile/LawAI-Mobile/.github/workflows/android-build.yml`.
+
+- Trigger it manually from the **Actions** tab with **Android Build**
+- Or let it run automatically on pull requests and pushes to `main`/`master`
+- Download the generated APK from the workflow run artifacts as `lawai-android-debug-apk`
+
 #### iOS App Store
 ```bash
 npm run build:ios
