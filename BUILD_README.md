@@ -40,7 +40,7 @@ npm run build:android
 ```
 
 #### Build on GitHub
-The repository includes a GitHub Actions workflow at `/home/runner/work/LawAI-Mobile/LawAI-Mobile/.github/workflows/android-build.yml`.
+The repository includes a GitHub Actions workflow at `.github/workflows/android-build.yml`.
 
 - Trigger it manually from the **Actions** tab with **Android Build**
 - Or let it run automatically on pull requests and pushes to `main`/`master`
