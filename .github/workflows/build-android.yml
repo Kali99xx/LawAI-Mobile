@@ -1,0 +1,70 @@
+name: Build Android APK & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build Android APK
+        id: build
+        run: |
+          BUILD_JSON=$(eas build --platform android --profile preview --non-interactive --json 2>/dev/null)
+          echo "build_json=$BUILD_JSON" >> $GITHUB_OUTPUT
+          BUILD_URL=$(echo "$BUILD_JSON" | jq -r '.[0].artifacts.buildUrl // .[0].buildUrl // empty')
+          echo "build_url=$BUILD_URL" >> $GITHUB_OUTPUT
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Download APK
+        run: |
+          mkdir -p ./build
+          curl -L "${{ steps.build.outputs.build_url }}" -o ./build/lawai.apk
+
+      - name: Get version from app.json
+        id: version
+        run: echo "version=$(node -p "require('./app.json').expo.version")" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name || format('v{0}', steps.version.outputs.version) }}
+          name: LawAI v${{ steps.version.outputs.version }}
+          body: |
+            ## LawAI Android APK v${{ steps.version.outputs.version }}
+
+            ### Installation
+            1. Download `lawai.apk` below.
+            2. Enable **Install from unknown sources** on your Android device.
+            3. Open the downloaded APK to install.
+
+            ### What's included
+            - AI-Powered FIR Generation
+            - Legal Document Management
+            - Case Tracking & Analytics
+            - Officer Safety Tools
+          files: ./build/lawai.apk
+          generate_release_notes: true
